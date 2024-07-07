@@ -1,46 +1,103 @@
-// FirebaseUI config
-var uiConfig = {
-  signInSuccessUrl: '<url-to-redirect-to-on-success>',
-  signInOptions: [
-    // Leave the lines as is for the providers you want to offer your users.
-    firebase.auth.GoogleAuthProvider.PROVIDER_ID,
-    firebase.auth.FacebookAuthProvider.PROVIDER_ID,
-    firebase.auth.TwitterAuthProvider.PROVIDER_ID,
-    firebase.auth.GithubAuthProvider.PROVIDER_ID,
-    firebase.auth.EmailAuthProvider.PROVIDER_ID,
-  ],
-  // Terms of service url/callback.
-  tosUrl: '<your-tos-url>',
-  // Privacy policy url/callback.
-  privacyPolicyUrl: function() {
-    window.location.assign('<your-privacy-policy-url>');
-  }
-};
+document.addEventListener('DOMContentLoaded', function() {
+    const db = firebase.firestore();
+    let currentUser = null;
 
-// Initialize the FirebaseUI Widget using Firebase.
-var ui = new firebaseui.auth.AuthUI(firebase.auth());
+    const loginButton = document.getElementById('loginButton');
+    const logoutButton = document.getElementById('logoutButton');
+    const grantAccessButton = document.getElementById('grantAccessButton');
+    const revokeAccessButton = document.getElementById('revokeAccessButton');
 
-// The start method will wait until the DOM is loaded.
-ui.start('#firebaseui-auth-container', uiConfig);
+    loginButton.addEventListener('click', login);
+    logoutButton.addEventListener('click', logout);
+    grantAccessButton.addEventListener('click', grantAccess);
+    revokeAccessButton.addEventListener('click', revokeAccess);
 
-// Listen to auth state changes
-firebase.auth().onAuthStateChanged((user) => {
-  if (user) {
-    // User is signed in
-    document.getElementById('firebaseui-auth-container').style.display = 'none';
-    document.getElementById('chat-section').style.display = 'block';
-  } else {
-    // No user is signed in
-    document.getElementById('firebaseui-auth-container').style.display = 'block';
-    document.getElementById('chat-section').style.display = 'none';
-  }
+    firebase.auth().onAuthStateChanged(handleAuthStateChanged);
+
+    function login() {
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        firebase.auth().signInWithEmailAndPassword(email, password)
+            .catch(error => console.error("Error logging in:", error));
+    }
+
+    function logout() {
+        firebase.auth().signOut()
+            .catch(error => console.error("Error logging out:", error));
+    }
+
+    function handleAuthStateChanged(user) {
+        currentUser = user;
+        document.getElementById('login-section').style.display = user ? 'none' : 'block';
+        document.getElementById('logoutButton').style.display = user ? 'block' : 'none';
+
+        if (user) {
+            checkUserRole(user.email);
+        } else {
+            document.getElementById('admin-section').style.display = 'none';
+            document.getElementById('doctor-section').style.display = 'none';
+        }
+    }
+
+    function checkUserRole(email) {
+        if (email === 'admin@example.com') {  // Replace with your admin email
+            document.getElementById('admin-section').style.display = 'block';
+            document.getElementById('doctor-section').style.display = 'none';
+            updateDoctorList();
+        } else {
+            db.collection('doctors').doc(email).get()
+                .then(doc => {
+                    if (doc.exists && doc.data().hasAccess) {
+                        document.getElementById('doctor-section').style.display = 'block';
+                    } else {
+                        alert('You do not have access to view medical data.');
+                        firebase.auth().signOut();
+                    }
+                    document.getElementById('admin-section').style.display = 'none';
+                })
+                .catch(error => console.error("Error checking doctor access:", error));
+        }
+    }
+
+    function grantAccess() {
+        const doctorEmail = document.getElementById('doctorEmail').value;
+        db.collection('doctors').doc(doctorEmail).set({
+            hasAccess: true,
+            grantedBy: currentUser.email,
+            grantedAt: firebase.firestore.FieldValue.serverTimestamp()
+        })
+        .then(() => {
+            alert(`Access granted to ${doctorEmail}`);
+            updateDoctorList();
+        })
+        .catch(error => console.error("Error granting access:", error));
+    }
+
+    function revokeAccess() {
+        const doctorEmail = document.getElementById('doctorEmail').value;
+        db.collection('doctors').doc(doctorEmail).update({
+            hasAccess: false,
+            revokedBy: currentUser.email,
+            revokedAt: firebase.firestore.FieldValue.serverTimestamp()
+        })
+        .then(() => {
+            alert(`Access revoked for ${doctorEmail}`);
+            updateDoctorList();
+        })
+        .catch(error => console.error("Error revoking access:", error));
+    }
+
+    function updateDoctorList() {
+        const doctorList = document.getElementById('doctorList');
+        doctorList.innerHTML = '';
+        db.collection('doctors').where('hasAccess', '==', true).get()
+            .then(querySnapshot => {
+                querySnapshot.forEach(doc => {
+                    const li = document.createElement('li');
+                    li.textContent = doc.id;
+                    doctorList.appendChild(li);
+                });
+            })
+            .catch(error => console.error("Error updating doctor list:", error));
+    }
 });
-
-function sendMessage() {
-  const message = document.getElementById('chat-input').value;
-  // Here you would typically send the message to your backend
-  // For now, we'll just display it in the chat output
-  const chatOutput = document.getElementById('chat-output');
-  chatOutput.innerHTML += `<p>User: ${message}</p>`;
-  document.getElementById('chat-input').value = '';
-}
