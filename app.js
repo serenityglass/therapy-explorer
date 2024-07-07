@@ -14,6 +14,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
     firebase.auth().onAuthStateChanged(handleAuthStateChanged);
 
+    console.log("Firebase initialized");
+
+    function handleAuthStateChanged(user) {
+      console.log("Auth state changed", user);
+      // ... rest of the function
+    }
+
     function login() {
         const email = document.getElementById('email').value;
         const password = document.getElementById('password').value;
