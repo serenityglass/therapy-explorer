@@ -107,4 +107,16 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .catch(error => console.error("Error updating doctor list:", error));
     }
+    function setPassword() {
+        const newPassword = document.getElementById('new-password').value;
+        firebase.auth().currentUser.updatePassword(newPassword).then(() => {
+            alert('Password set successfully');
+            checkUserRole(firebase.auth().currentUser.email);
+        }).catch((error) => {
+            console.error("Error setting password:", error);
+            alert('Failed to set password. Please try again.');
+        });
+}
+
+document.getElementById('setPasswordButton').addEventListener('click', setPassword);
 });
