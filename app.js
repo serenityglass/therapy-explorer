@@ -47,7 +47,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function checkUserRole(email) {
-        if (email === 'admin@example.com') {  // Replace with your admin email
+        if (email === 'mihnea.maftei@gmail.com') {  // Replace with your admin email
             document.getElementById('admin-section').style.display = 'block';
             document.getElementById('doctor-section').style.display = 'none';
             updateDoctorList();
