@@ -3,21 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Interface</title>
+    <title>Medical Data Access</title>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/ui/6.0.1/firebase-ui-auth.js"></script>
-    <link type="text/css" rel="stylesheet" href="https://www.gstatic.com/firebasejs/ui/6.0.1/firebase-ui-auth.css" />
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
     <script src="firebase-configuration.js"></script>
 </head>
 <body>
-    <h1>Welcome to the AI Interface</h1>
-    <div id="firebaseui-auth-container"></div>
-    <div id="chat-section" style="display: none;">
-        <textarea id="chat-input" rows="4" cols="50"></textarea>
-        <button onclick="sendMessage()">Send</button>
-        <div id="chat-output"></div>
+    <h1>Medical Data Access System</h1>
+    <div id="login-section">
+        <input type="email" id="email" placeholder="Email">
+        <input type="password" id="password" placeholder="Password">
+        <button id="loginButton">Login</button>
     </div>
+    <div id="admin-section" style="display: none;">
+        <h2>Admin Panel</h2>
+        <input type="email" id="doctorEmail" placeholder="Doctor's Email">
+        <button id="grantAccessButton">Grant Access</button>
+        <button id="revokeAccessButton">Revoke Access</button>
+        <h3>Doctors with Access:</h3>
+        <ul id="doctorList"></ul>
+    </div>
+    <div id="doctor-section" style="display: none;">
+        <h2>Doctor's View</h2>
+        <p>Medical data would be displayed here.</p>
+    </div>
+    <button id="logoutButton" style="display: none;">Logout</button>
 
     <script src="app.js"></script>
 </body>
