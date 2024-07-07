@@ -122,7 +122,6 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error("Error setting password:", error);
             alert('Failed to set password. Please try again.');
         });
-}
-
-document.getElementById('setPasswordButton').addEventListener('click', setPassword);
+    }
+    document.getElementById('setPasswordButton').addEventListener('click', setPassword);
 });
