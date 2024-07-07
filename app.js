@@ -55,7 +55,13 @@ document.addEventListener('DOMContentLoaded', function() {
             db.collection('doctors').doc(email).get()
                 .then(doc => {
                     if (doc.exists && doc.data().hasAccess) {
-                        document.getElementById('doctor-section').style.display = 'block';
+                        if (firebase.auth().currentUser.providerData[0].providerId === 'password') {
+                            document.getElementById('doctor-section').style.display = 'block';
+                            document.getElementById('set-password-section').style.display = 'none';
+                        } else {
+                            document.getElementById('set-password-section').style.display = 'block';
+                            document.getElementById('doctor-section').style.display = 'none';
+                        }
                     } else {
                         alert('You do not have access to view medical data.');
                         firebase.auth().signOut();
